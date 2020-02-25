@@ -3,13 +3,16 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
-	"os/exec"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
+
+type wordMap map[string]interface{}
 
 func checkLocally(word string) (bool, string) {
 
@@ -20,23 +23,22 @@ func checkLocally(word string) (bool, string) {
 		if status == true {
 			defer conn.Close()
 			fmt.Println("Success Redis")
-			meaning, err := GetValue(conn, word)
-			if err != nil {
+			meaning, status := GetValue(conn, word)
+			fmt.Println("Inside checkLocal ", meaning, status)
+			if status != true {
 
-				fmt.Print("Failed in set")
+				fmt.Println("Meaning not found in redis ")
 				return false, ""
-			} else {
-
-				return true, meaning
-
 			}
+
+			return true, meaning
 
 		}
 	}
 	return false, ""
 }
 
-func GetMeaning(w http.ResponseWriter, r *http.Request) {
+func getMeaning(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	word := vars["word"]
 	fmt.Println("Fetching meaning")
@@ -45,37 +47,46 @@ func GetMeaning(w http.ResponseWriter, r *http.Request) {
 	//status := false
 	if status == false {
 		fmt.Println("not found in DB")
-		// req, err := http.NewRequest("GET", "https://owlbot.info/api/v4/dictionary/"+word, nil)
-		// if err != nil {
-		// log.Fatal(err.Error())
-		// }
-		// req.Header.Set("Authorization", "Token 23db56a1aace2a60d425f5456265e8d988819728")
+		req, err := http.NewRequest("GET", "https://api.dictionaryapi.dev/api/v1/entries/en/"+word, nil)
 
-		// client := &http.Client{}
-		// resp, err := client.Do(req)
-		// if err != nil {
-		// 	log.Fatal(err.Error())
-		// }
-		// defer resp.Body.Close()
-
-		// bodyBytes, err := ioutil.ReadAll(resp.Body)
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
-		// bodyString := string(bodyBytes)
-		cmd := exec.Command("./main.py", word)
-
-		meaning, err := cmd.CombinedOutput()
 		if err != nil {
-			fmt.Println(err)
-			return
+			log.Fatal(err.Error())
+			meaning = "MEANINGNOTFOUND"
+		} else {
+			client := &http.Client{}
+			resp, err := client.Do(req)
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
+			if resp.StatusCode != 200 {
+				meaning = "MEANINGNOTFOUND"
+			} else {
+				defer resp.Body.Close()
+
+				bodyBytes, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					log.Fatal(err)
+				}
+				var dat []wordMap
+
+				_ = json.Unmarshal(bodyBytes, &dat)
+				for k, v := range dat[0] {
+					if k == "meaning" {
+						for _, v1 := range v.(map[string]interface{}) {
+							meaning = (v1.([]interface{})[0].(map[string]interface{})["definition"]).(string)
+							fmt.Println("WORD: ", word, "MEANING: ", meaning)
+							break
+						}
+					}
+				}
+			}
 		}
-		fmt.Println("Output: ", string(meaning))
-		bodyString := string(meaning)
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(bodyString)
+		err = json.NewEncoder(w).Encode(meaning)
 		fmt.Println("Written to response writer")
+
 		if err == nil {
 			fmt.Println("writing to DB")
 			redisServer := os.Getenv("REDIS_SERVER")
@@ -84,7 +95,9 @@ func GetMeaning(w http.ResponseWriter, r *http.Request) {
 			if status == true {
 				defer conn.Close()
 				fmt.Println("New word added to redis dictionary")
-				SetKey(conn, word, bodyString)
+				SetKey(conn, word, meaning)
+			} else {
+				fmt.Println("Failed to add the word to dictionary")
 			}
 		}
 
@@ -102,7 +115,7 @@ func GetMeaning(w http.ResponseWriter, r *http.Request) {
 func main() {
 
 	router := mux.NewRouter()
-	router.HandleFunc("/api/meaning/{word}", GetMeaning).Methods("GET")
+	router.HandleFunc("/api/meaning/{word}", getMeaning).Methods("GET")
 
 	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "PATCH", "DELETE"})

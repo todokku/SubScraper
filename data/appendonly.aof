@@ -6,8 +6,98 @@ $1
 *3
 $3
 SET
-$6
-laptop
-$66
-A computer that is portable and suitable for use while traveling.
+$4
+fine
+$16
+Of high quality.
+*3
+$3
+SET
+$4
+move
+$55
+Go in a specified direction or manner; change position.
+*3
+$3
+SET
+$4
+shut
+$60
+Move (something) into position so that it blocks an opening.
+*3
+$3
+SET
+$2
+on
+$55
+Physically in contact with and supported by (a surface)
+*3
+$3
+SET
+$4
+Yeah
+$0
 
+*3
+$3
+SET
+$2
+do
+$69
+Perform (an action, the precise nature of which is often unspecified)
+*3
+$3
+SET
+$4
+dont
+$15
+MEANINGNOTFOUND
+*3
+$3
+SET
+$8
+computer
+$140
+An electronic device for storing and processing data, typically in binary form, according to instructions given to it in a variable program.
+*3
+$3
+SET
+$5
+thats
+$15
+MEANINGNOTFOUND
+*3
+$3
+SET
+$4
+know
+$57
+Be aware of through observation, inquiry, or information.
+*3
+$3
+SET
+$3
+way
+$46
+A method, style, or manner of doing something.
+*3
+$3
+SET
+$4
+yeah
+$0
+
+*3
+$3
+SET
+$5
+don't
+$7
+Do not.
+*3
+$3
+SET
+$6
+that's
+$52
+There is nothing more to do or say about the matter.

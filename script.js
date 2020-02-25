@@ -24,7 +24,7 @@ function getMeaning(source, video) {
         if (subtitles.firstChild != null && val.length === 0) {
             let children = subtitles.children;
             for (let i = 0; i < children.length; i++) {
-                filteredWords = children[i].innerText.removeStopWords();
+                filteredWords = children[i].innerText.toLowerCase().removeStopWords();
                 let x = [];
                 if (source === "primevideo") {
                     x = filteredWords.replace(/(\r\n|\n|\r)/gm," ").split(" ")
@@ -32,7 +32,7 @@ function getMeaning(source, video) {
                     x = filteredWords.split(" ");
                 }
                 x.forEach((e) => {
-                    let y = e.replace(/[^\w\s]/gi, '');
+                    let y = e.replace(/[^\w\s']/gi, '');
                     val.push(y)
                 });
                 //removing duplicatesu
@@ -51,21 +51,23 @@ function getMeaning(source, video) {
 
                 request.onreadystatechange = function () {
                     if (request.readyState === 4 && request.status === 200) {
-                        let resp = JSON.parse(request.responseText);
-                        if (resp.includes("Error 404")) {
+                        var meaning = request.responseText
+                        //let resp = JSON.parse(request.responseText);
+                        console.log("means",meaning)
+                        if ( meaning.includes("MEANINGNOTFOUND") ) {
+                                         
+                            listHtml += '<li class="list-group-item">' + v + ': No meaning</li>';
                             console.log("Invalid Word")
                         } else {
-                            let obj = JSON.parse(resp);
-                            if (obj.hasOwnProperty('definitions')) {
-                                listHtml += '<li class="list-group-item">' + v + ": " + obj.definitions[0].definition + '</li>';
-                            } else {
-                                listHtml += '<li class="list-group-item">' + v + ': No meaning</li>';
-                            }
+    
+                            listHtml += '<li class="list-group-item">' + v + ": " + meaning + '</li>';
+                                        
                         }
+                        
                         count++
                     }
-                };
-            });
+                }
+            })
             listHtml += '</ul>';
             let intervalId = setInterval(() => {
                 if (count === val.length) {
@@ -576,7 +578,7 @@ String.prototype.removeStopWords = function() {
         // For each word, check all the stop words
         for(y=0; y < stop_words.length; y++) {
             // Get the current word
-            word = words[x].replace(/\s+|[^a-z]+/ig, "");	// Trim the word and remove non-alpha
+            word = words[x].replace(/\s+|[^a-z']+/ig, "");	// Trim the word and remove non-alpha
 
             // Get the stop word
             stop_word = stop_words[y];

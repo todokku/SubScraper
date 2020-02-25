@@ -20,17 +20,18 @@ func SetKey(conn redis.Conn, key string, value string) error {
 }
 
 //GetValue getting meaning
-func GetValue(conn redis.Conn, key string) (string, error) {
+func GetValue(conn redis.Conn, key string) (string, bool) {
 
-	fmt.Print("Getting value")
+	fmt.Print("Getting meaning from redis for ", key)
 
 	value, err := redis.String(conn.Do("GET", key))
 	if err != nil {
-		return "", err
+		return "", false
 	}
-	return value, nil
+	return value, true
 }
 
+//ConnectToRedis connecting redis
 func ConnectToRedis(redisServer string) (bool, redis.Conn) {
 
 	conn, err := redis.Dial("tcp", redisServer)
