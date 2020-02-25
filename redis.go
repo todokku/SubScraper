@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/gomodule/redigo/redis"
 )
 
-func setKey(conn redis.Conn, key string, value string) error {
+//SetKey setting meaning
+func SetKey(conn redis.Conn, key string, value string) error {
 
 	fmt.Print("Setting key value")
 
@@ -19,7 +19,8 @@ func setKey(conn redis.Conn, key string, value string) error {
 	return nil
 }
 
-func getValue(conn redis.Conn, key string) (string, error) {
+//GetValue getting meaning
+func GetValue(conn redis.Conn, key string) (string, error) {
 
 	fmt.Print("Getting value")
 
@@ -30,7 +31,7 @@ func getValue(conn redis.Conn, key string) (string, error) {
 	return value, nil
 }
 
-func connectToRedis(redisServer string) (bool, redis.Conn) {
+func ConnectToRedis(redisServer string) (bool, redis.Conn) {
 
 	conn, err := redis.Dial("tcp", redisServer)
 
@@ -43,7 +44,7 @@ func connectToRedis(redisServer string) (bool, redis.Conn) {
 
 }
 
-func main() {
+/*func Connect() {
 
 	redisServer := os.Getenv("REDIS_SERVER")
 	if redisServer != "" {
@@ -53,7 +54,7 @@ func main() {
 			fmt.Print("Success Redis")
 
 			//err := setKey(conn, "day1", "SUN")
-			val, err := getValue(conn, "zealous")
+			val, err := getValue(conn, "discourse")
 			if err != nil {
 
 				fmt.Print("Failed in set")
@@ -66,4 +67,4 @@ func main() {
 		}
 	}
 
-}
+}*/
