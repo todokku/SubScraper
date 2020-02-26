@@ -32,7 +32,7 @@ function getMeaning(source, video) {
                     x = filteredWords.split(" ");
                 }
                 x.forEach((e) => {
-                    let y = e.replace(/[^\w\s']/gi, '');
+                    let y = e.replace(/[^\w\s']/gi, ' ');
                     val.push(y)
                 });
                 //removing duplicatesu
@@ -42,38 +42,43 @@ function getMeaning(source, video) {
             }
             let count = 0;
             let listHtml = '<ul class="list-group">';
+            console.log("all data",val)
             val.forEach((v) => {
                 let request = new XMLHttpRequest();
-                request.open('GET', "http://localhost:8000/api/meaning/" + v, true);
-                request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-                request.setRequestHeader('Accept', 'application/json');
-                request.send();
+                console.log("lenght of ",v,v.length)
+                if( v.length != 0){
+                    request.open('GET', "http://localhost:8000/api/meaning/" + v, true);
+                    request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+                    request.setRequestHeader('Accept', 'application/json');
+                    request.send();
 
-                request.onreadystatechange = function () {
-                    if (request.readyState === 4 && request.status === 200) {
-                        var meaning = request.responseText
-                        //let resp = JSON.parse(request.responseText);
-                        console.log("means",meaning)
-                        if ( meaning.includes("MEANINGNOTFOUND") ) {
-                                         
-                            listHtml += '<li class="list-group-item">' + v + ': No meaning</li>';
-                            console.log("Invalid Word")
-                        } else {
-    
-                            listHtml += '<li class="list-group-item">' + v + ": " + meaning + '</li>';
-                                        
+                    request.onreadystatechange = function () {
+                        if (request.readyState === 4 && request.status === 200) {
+                            var meaning = request.responseText
+                            //let resp = JSON.parse(request.responseText);
+                            console.log("means",meaning,meaning.length)
+                            
+                            if ( meaning.includes("MEANINGNOTFOUND") || meaning.length == 0 ) {
+                                            
+                                listHtml += '<li class="list-group-item">' + v + ': No meaning</li>';
+                                console.log("Invalid Word")
+                            } else {
+        
+                                listHtml += '<li class="list-group-item">' + v + ": " + meaning + '</li>';
+                                            
+                            }
+                            
+                            count++
                         }
-                        
-                        count++
                     }
-                }
+                }    
             })
             listHtml += '</ul>';
             let intervalId = setInterval(() => {
                 if (count === val.length) {
                     Swal.fire({
                         position: 'top-end',
-                        title: 'Word List',
+                        title: 'SubScraper',
                         html: listHtml,
                         showCloseButton: true,
                     });
@@ -578,7 +583,7 @@ String.prototype.removeStopWords = function() {
         // For each word, check all the stop words
         for(y=0; y < stop_words.length; y++) {
             // Get the current word
-            word = words[x].replace(/\s+|[^a-z']+/ig, "");	// Trim the word and remove non-alpha
+            word = words[x].replace(/\s+|[^a-z']+/ig, " ");	// Trim the word and remove non-alpha
 
             // Get the stop word
             stop_word = stop_words[y];
